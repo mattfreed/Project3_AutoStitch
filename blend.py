@@ -77,7 +77,7 @@ def accumulateBlend(img, acc, M, blendWidth):
     # print(maxY)
 
     warpedImg = cv2.warpPerspective(img,M,(acc.shape[1],acc.shape[0]), flags=1)
-    print(warpedImg.shape)
+
     # rgba = np.concatenate((warpedImg, np.zeros((warpedImg.shape[0], warpedImg.shape[1], 1))), axis=2)
     # rgba = cv2.cvtColor(warpedImg, cv2.COLOR_RGB2RGBA)
 
