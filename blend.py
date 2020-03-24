@@ -71,20 +71,30 @@ def accumulateBlend(img, acc, M, blendWidth):
     # raise Exception("TODO in blend.py not implemented")
     # #TODO-BLOCK-END
     # # END TODO
-    # Minv = np.linalg.inv(M)
-    # for y in range(len(acc)):
-    #     for x in range(len(acc[0])):
-    #         newX,newY,newZ = Minv@np.asarray([x,y,1])
-    #         newX = newX/newZ
-    #         newY = newY/newZ
-    #         if newY < 0 or newY >= img.shape[0] or newX < 0 or newX >= img.shape[1]:
-    #             xfactor = newX - int(newX)
-    #             yfactor = newY - int(newY)
-    #             if int(newY) < img.shape[0] or int(newX) < img[1]:
-    #                 acc[int(newY), int(newX)] = ((1-yfactor)*img[y,x] + yfactor*img[y+1,x] + (1-xfactor)*img[y,x] + xfactor*img[y,x+1])/2
-    #             else:
-    #                 acc[int(newY),int(newX)] = img[y,x]
-    acc = cv2.warpPerspective(img,M,acc, flags='INTER_LINEAR')
+
+    minX, minY, maxX, maxY = imageBoundingBox(img, M)
+
+    warpedImg = cv2.warpPerspective(img,M,(acc.shape[0],acc.shape[1]), flags=1)
+    # rgba = np.concatenate((warpedImg, np.zeros((warpedImg.shape[0], warpedImg.shape[1], 1))), axis=2)
+    # rgba = cv2.cvtColor(warpedImg, cv2.COLOR_RGB2RGBA)
+
+    blendMin = blendWidth+minX
+    blendMax = maxX-blendWidth
+    for i in  range(minY,maxY):
+        for j in  range(minX,maxX):
+            if j < blendMin:
+                for k in range(3):
+                    acc[i][j][k] += ((j-minX)/blendWidth)*warpedImg[i][j][k]
+                acc[i][j][3] += (j-minX)/blendWidth
+            elif j > blendMax:
+                # rgba[i][j][3] +=  maxX-j/blendWidth
+                for k in range(3):
+                    acc[i][j][k] += ((maxX-j)/blendWidth)*warpedImg[i][j][k]
+                acc[i][j][3] += (maxX-j)/blendWidth
+
+
+
+
 
 
 
@@ -100,14 +110,16 @@ def normalizeBlend(acc):
     """
     # BEGIN TODO 11
     # fill in this routine..
-    #TODO-BLOCK-BEGIN
-    raise Exception("TODO in blend.py not implemented")
-    #TODO-BLOCK-END
-    # END TODO
-    img = acc.copy()
-    for i in range(len(acc)):
-        for j in range(len(acc[0])):
-            img[i][j]/((acc[i][j])[3])
+    # #TODO-BLOCK-BEGIN
+    # raise Exception("TODO in blend.py not implemented")
+    # #TODO-BLOCK-END
+    # # END TODO
+    dat_shape0, dat_shape1, dat_shape2 = acc.shape[0],acc.shape[1],acc.shape[2]-1
+    img = np.zeros((dat_shape0,dat_shape1,dat_shape2))
+    for i in range(dat_shape0):
+        for j in range(dat_shape1):
+            for k in range(dat_shape2):
+                img[i][j][k] = int(acc[i][j][k]/acc[i][j][3]) if acc[i][j][3] != 0 else 0
     return img
 
 
@@ -249,10 +261,13 @@ def blendImages(ipv, blendWidth, is360=False, A_out=None):
     # Then handle the vertical drift
     # Note: warpPerspective does forward mapping which means A is an affine
     # transform that maps accumulator coordinates to final panorama coordinates
-    #TODO-BLOCK-BEGIN
-    raise Exception("TODO in blend.py not implemented")
-    #TODO-BLOCK-END
+    # #TODO-BLOCK-BEGIN
+    # raise Exception("TODO in blend.py not implemented")
+    # #TODO-BLOCK-END
     # END TODO
+
+    if is360:
+        A = computeDrift(x_init,y_init,x_final,y_final,width)
 
     if A_out is not None:
         A_out[:] = A
