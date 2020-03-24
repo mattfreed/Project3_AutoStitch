@@ -41,7 +41,7 @@ def imageBoundingBox(img, M):
     for y in range(img.shape[0]):
         for x in range(img.shape[1]):
             newx,newy,newz = M@(np.asarray([x,y,1]))
-            newVals.append([newx,newy,newz])
+            newVals.append([newx,newy,newz]/newz)
 
     minX = (newVals[np.argmin(newVals,axis = 0)[0]])[0]
     minY = (newVals[np.argmin(newVals,axis = 0)[1]])[1]
@@ -73,8 +73,11 @@ def accumulateBlend(img, acc, M, blendWidth):
     # # END TODO
 
     minX, minY, maxX, maxY = imageBoundingBox(img, M)
+    # print("max" + str(maxX))
+    # print(maxY)
 
-    warpedImg = cv2.warpPerspective(img,M,(acc.shape[0],acc.shape[1]), flags=1)
+    warpedImg = cv2.warpPerspective(img,M,(acc.shape[1],acc.shape[0]), flags=1)
+    print(warpedImg.shape)
     # rgba = np.concatenate((warpedImg, np.zeros((warpedImg.shape[0], warpedImg.shape[1], 1))), axis=2)
     # rgba = cv2.cvtColor(warpedImg, cv2.COLOR_RGB2RGBA)
 
@@ -91,6 +94,10 @@ def accumulateBlend(img, acc, M, blendWidth):
                 for k in range(3):
                     acc[i][j][k] += ((maxX-j)/blendWidth)*warpedImg[i][j][k]
                 acc[i][j][3] += (maxX-j)/blendWidth
+            else:
+                for k in range(3):
+                    acc[i][j][k] += warpedImg[i][j][k]
+                acc[i][j][3] += 1
 
 
 
@@ -115,7 +122,7 @@ def normalizeBlend(acc):
     # #TODO-BLOCK-END
     # # END TODO
     dat_shape0, dat_shape1, dat_shape2 = acc.shape[0],acc.shape[1],acc.shape[2]-1
-    img = np.zeros((dat_shape0,dat_shape1,dat_shape2))
+    img = np.zeros((dat_shape0,dat_shape1,dat_shape2), dtype=np.uint8)
     for i in range(dat_shape0):
         for j in range(dat_shape1):
             for k in range(dat_shape2):

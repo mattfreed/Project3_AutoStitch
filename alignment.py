@@ -141,7 +141,7 @@ def alignPair(f1, f2, matches, m, nRANSAC, RANSACthresh):
             motion = computeHomography(f1, f2, randMatch, A_out=None)
             # inliers = getInliers(f1,f2, randMatch, motion, RANSACthresh)
             inliers = getInliers(f1, f2, matches, motion, RANSACthresh)
-            print(inliers)
+            # print(inliers)
             InliersTotal.append(inliers)
             allInliers.append(len(inliers))
     maxIndexInliers = np.argmax(allInliers)
